@@ -33,6 +33,10 @@
     if ($el.is('[' + attr + ']')) {
       return $el.attr(attr) || true;
     }
+    attr = 'data-' + str;
+    if ($el.is('[' + attr + ']')) {
+      return $el.attr(attr) || true;
+    }
     return false;
   }
 
@@ -51,6 +55,11 @@
       this.setupSingle();
     },
 
+    restart: function () {
+      this.clear();
+      this.init();
+    },
+
     register: function (name, fn) {
       this.fns[name] = fn;
     },
@@ -61,6 +70,14 @@
         dv.clear();
       });
       this.dvElements = [];
+    },
+
+    purge: function () {
+      // for garbage collection
+      this.clear();
+      this.fns = {};
+      this.ctx = null;
+      this.started = false;
     },
 
     setupStatic: function () {
@@ -79,6 +96,15 @@
         dv.bind();
         self.dvElements.push(dv);
       });
+    },
+
+    setupRepeat: function () {
+      var self = this;
+      self.ctx.find('.dv-repeat').each(function (i, e){
+        var dv = new DvRepeat(e, self);
+        dv.bind();
+        self.dvElements.push(dv);
+      });
     }
   };
 
@@ -87,10 +113,10 @@
   function DvElement(ele, diva) {
     var self;
     self = this.element = $(ele);
-    this.event = (dvAttr(self, 'event') || 'click').split(' ');
     this.action = (dvAttr(self, 'action') || 'toggle').split(' ');
     this.diva = diva || new Diva();
     this.target = this.parseTargets();
+    this.event = (dvAttr(self, 'event') || 'click').split(' ');
     this.handlers = [];
   }
 
@@ -99,9 +125,10 @@
     makeFn: function (name) {
       var args = this.target,
           that = this;
-      return function () {
-        var data = [dvAttr(that.element, 'data') || ''];
-        that.diva.fns[name].apply(that.element, args.concat(data));
+      return function (e) {
+        var data = dvAttr(that.element, 'data') || '';
+        $.extend(e, {'data': data});
+        that.diva.fns[name].apply(that.element, args.concat([e]));
       };
     },
 
@@ -163,8 +190,17 @@
         ret.push($(e, ctx));
       });
       return ret;
+    },
+
+    load: function (opt) {
+      this.unbind();
+      this.diva = opt.diva || this.diva;
+      this.event = opt.event || this.event;
+      this.action = opt.action || this.action;
+      this.target = opt.target || this.target;
     }
   };
+
 
   function DvSingle (e, diva) {
     DvElement.call(this, e, diva);
@@ -174,6 +210,79 @@
 
   DvSingle.prototype = new DvElement();
   DvSingle.prototype.constructor = DvSingle;
+
+
+  function DvRepeat(e, diva) {
+    DvElement.call(this, e, diva);
+  }
+
+  DvRepeat.prototype = $.extend({}, DvElement.prototype);
+
+  DvRepeat.prototype.bind = function () {
+    var handler, i,
+        ele = this.element,
+        act = this.action,
+        tar = this.target[0], // only bind the first
+        evt = this.event;
+
+    if (evt.length !== act.length) {
+      handler = this.makeFn(act[0]);
+      this.handlers.push(handler);
+      ele.on(evt.join(' '), tar, handler);
+    } else {
+      i = evt.length;
+      while (--i >= 0) {
+        handler = this.makeFn(act[i]);
+        this.handlers.push(handler);
+        ele.on(evt[i], tar, handler);
+      }
+    }
+  };
+
+  DvRepeat.prototype.unbind = function () {
+    if (this.handlers.length === 0) { return; }
+
+    var handlers = this.handlers,
+        evt = this.event,
+        act = this.action,
+        ele = this.element,
+        tar = this.target[0],
+        i;
+
+    if (evt.length !== act.length) {
+      ele.off(evt.join(' '), tar, handlers[0]);
+    } else {
+      for (i = handlers.length-1; i >= 0; i--) {
+        ele.off(evt[i], tar, handlers[i]);
+      }
+    }
+  };
+
+  DvRepeat.prototype.makeFn = function (name) {
+    var repeatDv = this;
+
+    var handler = function (evt) {
+      var repeatItem = new DvElement(this, repeatDv.diva),
+          targets = repeatItem.parseTargets(),
+          ele = repeatItem.element,
+          data = dvAttr(ele, 'data') || '';
+      $.extend(evt, {
+        'container' : repeatDv.element,
+        'data' : data
+      });
+      repeatItem.makeFn(name).apply(this, targets.concat(evt));
+      repeatItem.clear();
+    };
+
+    repeatDv.handlers.push(handler);
+    return handler;
+
+  };
+
+  DvRepeat.prototype.parseTargets = function () {
+    var tar = dvAttr(this.element, 'target') || '';
+    return tar.split('|');
+  };
 
   window.Diva = Diva;
 }(window.$));
