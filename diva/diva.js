@@ -62,7 +62,20 @@
     },
 
     register: function (name, fn) {
-      this.fns[name] = fn;
+      if (typeof name === 'object') {
+        $.extend(this.fns, name);
+      } else {
+        this.fns[name] = fn;
+      }
+    },
+
+    drop: function ($ele) {
+      // arg must be the reference
+      var i = $.inArray($ele, this.dvElements);
+      if (i !== -1) {
+        var dv = this.dvElements.splice(i, 1);
+        dv.clear();
+      }
     },
 
     clear: function () {
@@ -281,5 +294,12 @@
     return tar.split('|');
   };
 
-  window.Diva = Diva;
+  if (typeof module !== 'undefined' && module.exports) {
+    module.exports = Diva;
+  } else if (typeof define === 'function' && define.amd) {
+    define(function() { return Diva;});
+  } else {
+    window.Diva = Diva;
+  }
+
 }(window.$));
