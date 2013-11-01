@@ -134,10 +134,38 @@
       </div>
 
 
+      <div class="row">
+        <div class="span8">
+          <h3>Dynamic Binding</h3>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="span8">
+          <button class="dv-toggle btn" dv-action="addButton" dv-target="#repeatable" dv-exclude>Add new button</button>
+          <div id="repeatable" class="btn-group dv-repeat" dv-target=".btn">
+            <button class="btn">Old Button</button>
+            <button class="btn">Old Button</button>
+            <button class="btn">Old Button</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="span8">
+      <button class="btn dv-toggle" dv-action="addButton" dv-exclude dv-target="#unrepeatable" dv-action="debug">Add new button</button>
+      <div id="unrepeatable" class="btn-group" >
+        <button class="btn dv-toggle">Old Button</button>
+        <button class="btn dv-toggle">Old Button</button>
+        <button class="btn dv-toggle">Old Button</button>
+      </div>
+        </div>
+      </div>
+
     </div>
 
     <script src="js/jquery-1.10.2.min.js"></script>
-    <script src="../toggle.js"></script>
+    <script src="../diva.js"></script>
     <script src="js/test.js"></script>
 </body>
 </html>

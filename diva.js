@@ -53,6 +53,7 @@
       // static
       this.setupStatic();
       this.setupSingle();
+      this.setupRepeat();
     },
 
     restart: function () {
@@ -262,15 +263,11 @@
     var repeatDv = this;
 
     var handler = function (evt) {
-      var repeatItem = new DvElement(this, repeatDv.diva),
-          targets = repeatItem.parseTargets(),
-          ele = repeatItem.element,
-          data = dvAttr(ele, 'data') || '';
+      var repeatItem = new DvElement(this, repeatDv.diva);
       $.extend(evt, {
-        'container' : repeatDv.element,
-        'data' : data
+        'container' : repeatDv.element
       });
-      repeatItem.makeFn(name).apply(this, targets.concat(evt));
+      repeatItem.makeFn(name).apply(this, evt);
       repeatItem.clear();
     };
 
