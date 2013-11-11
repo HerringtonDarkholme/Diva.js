@@ -20,6 +20,7 @@
       for (var i = 0, l = arguments.length; i < l; i++) {
         tar = arguments[i];
         if (tar instanceof $) {
+          // optimization : cache last active
           tar.siblings().removeClass(cls);
           tar.toggleClass(cls);
         } else { break; }
@@ -29,6 +30,7 @@
   };
 
   function dvAttr($el, str) {
+    // get prefixed attributes
     var attr = 'dv-' + str;
     if ($el.is('[' + attr + ']')) {
       return $el.attr(attr) || true;
@@ -51,6 +53,27 @@
 
     init: function () {
       // static
+      var self = this;
+      var cfgs = [
+        {
+          name: 'static',
+          klass: 'dv-toggle',
+          ctor: DvElement
+        },
+        {
+          name: 'single',
+          klass: 'dv-single',
+          ctor: DvSingle
+        },
+        {
+          name: 'repeat',
+          klass: 'dv-repeat',
+          ctor: DvRepeat
+        }
+      ];
+      $.each(cfgs, function(i, cfg) {
+        self.setup(cfg);
+      });
       this.setupStatic();
       this.setupSingle();
       this.setupRepeat();
@@ -94,32 +117,21 @@
       this.started = false;
     },
 
-    setupStatic: function () {
-      var self = this;
-      self.ctx.find('.dv-toggle').each(function (i, e) {
-        var dv = new DvElement(e , self);
-        dv.bind();
-        self.dvElements.push(dv);
-      });
-    },
+    setup: function (cfg) {
+      // cfg: {name: blah, klass: blah, ctor: blah}
+      var self = this,
+          camelName = 'setup' + cfg.name[0].toUpperCase() + cfg.name.slice(1);
 
-    setupSingle: function () {
-      var self = this;
-      self.ctx.find('.dv-single').each(function (i, e) {
-        var dv = new DvSingle(e , self);
-        dv.bind();
-        self.dvElements.push(dv);
-      });
-    },
+      self[camelName] = function () {
+        self.ctx.find('.' + cfg.klass).each(function (i, e) {
+          var dv = new cfg.ctor(e, self);
+          dv.bind();
+          self.dvElements.push(dv);
+        });
+      };
 
-    setupRepeat: function () {
-      var self = this;
-      self.ctx.find('.dv-repeat').each(function (i, e){
-        var dv = new DvRepeat(e, self);
-        dv.bind();
-        self.dvElements.push(dv);
-      });
     }
+
   };
 
 
@@ -231,6 +243,7 @@
   }
 
   DvRepeat.prototype = $.extend({}, DvElement.prototype);
+  DvRepeat.prototype.constructor = DvRepeat;
 
   DvRepeat.prototype.bind = function () {
     var handler, i,
