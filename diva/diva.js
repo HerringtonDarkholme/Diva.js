@@ -42,100 +42,6 @@
     return false;
   }
 
-  function Diva(context) {
-    this.ctx = $(context || document);
-    this.fns = $.extend({}, defaultHandler);
-    this.dvElements = [];
-    this.started = false;
-  }
-
-  Diva.prototype = {
-
-    init: function () {
-      // static
-      var self = this;
-      var cfgs = [
-        {
-          name: 'static',
-          klass: 'dv-toggle',
-          ctor: DvElement
-        },
-        {
-          name: 'single',
-          klass: 'dv-single',
-          ctor: DvSingle
-        },
-        {
-          name: 'repeat',
-          klass: 'dv-repeat',
-          ctor: DvRepeat
-        }
-      ];
-      $.each(cfgs, function(i, cfg) {
-        self.setup(cfg);
-      });
-      this.setupStatic();
-      this.setupSingle();
-      this.setupRepeat();
-    },
-
-    restart: function () {
-      this.clear();
-      this.init();
-    },
-
-    register: function (name, fn) {
-      if (typeof name === 'object') {
-        $.extend(this.fns, name);
-      } else {
-        this.fns[name] = fn;
-      }
-    },
-
-    drop: function ($ele) {
-      // arg must be the reference
-      var i = $.inArray($ele, this.dvElements);
-      if (i !== -1) {
-        var dv = this.dvElements.splice(i, 1);
-        dv.clear();
-      }
-    },
-
-    clear: function () {
-      // remove handler
-      $.each(this.dvElements, function (i, dv){
-        dv.clear();
-      });
-      this.dvElements = [];
-    },
-
-    purge: function () {
-      // for garbage collection
-      this.clear();
-      this.fns = {};
-      this.ctx = null;
-      this.started = false;
-    },
-
-    setup: function (cfg) {
-      // cfg: {name: blah, klass: blah, ctor: blah}
-      var self = this,
-          camelName = 'setup' + cfg.name[0].toUpperCase() + cfg.name.slice(1);
-
-      self[camelName] = function () {
-        self.ctx.find('.' + cfg.klass).each(function (i, e) {
-          var dv = new cfg.ctor(e, self);
-          dv.bind();
-          self.dvElements.push(dv);
-        });
-      };
-
-    }
-
-  };
-
-
-
   function DvElement(ele, diva) {
     var self;
     self = this.element = $(ele);
@@ -306,6 +212,115 @@
     var tar = dvAttr(this.element, 'target') || '';
     return tar.split('|');
   };
+
+
+  // Facade Class
+  function Diva(context) {
+    this.ctx = $(context || document);
+    this.fns = $.extend({}, defaultHandler);
+    this.dvElements = [];
+    this.started = false;
+  }
+
+  Diva.cfgs = [
+    {
+      name: 'static',
+      klass: 'dv-toggle',
+      ctor: DvElement
+    },
+    {
+      name: 'single',
+      klass: 'dv-single',
+      ctor: DvSingle
+    },
+    {
+      name: 'repeat',
+      klass: 'dv-repeat',
+      ctor: DvRepeat
+    }
+  ];
+
+  Diva._extend = function (cfg) {
+    if (cfg &&
+        typeof cfg.name  === 'string' &&
+        typeof cfg.klass === 'string' &&
+        typeof cfg.ctor  === 'function'
+        ) {
+      Diva.cfgs.push(cfg);
+    }
+  };
+
+  Diva.prototype = {
+
+    init: function () {
+      // static
+      var self = this;
+      $.each(Diva.cfgs, function(i, cfg) {
+        var setupName = self.setup(cfg);
+        self[setupName]();
+      });
+      //this.setupStatic();
+      //this.setupSingle();
+      //this.setupRepeat();
+    },
+
+    restart: function () {
+      this.clear();
+      this.init();
+    },
+
+    register: function (name, fn) {
+      if (typeof name === 'object') {
+        $.extend(this.fns, name);
+      } else {
+        this.fns[name] = fn;
+      }
+    },
+
+    drop: function ($ele) {
+      // arg must be the reference
+      var i = $.inArray($ele, this.dvElements);
+      if (i !== -1) {
+        var dv = this.dvElements.splice(i, 1);
+        dv.clear();
+      }
+    },
+
+    clear: function () {
+      // remove handler
+      $.each(this.dvElements, function (i, dv){
+        dv.clear();
+      });
+      this.dvElements = [];
+    },
+
+    purge: function () {
+      // for garbage collection
+      this.clear();
+      this.fns = {};
+      this.ctx = null;
+      this.started = false;
+    },
+
+    setup: function (cfg) {
+      // cfg: {name: blah, klass: blah, ctor: blah}
+      var self = this,
+          camelName = 'setup' + cfg.name[0].toUpperCase() + cfg.name.slice(1);
+
+      self[camelName] = function () {
+        self.ctx.find('.' + cfg.klass).each(function (i, e) {
+          var dv = new cfg.ctor(e, self);
+          dv.bind();
+          self.dvElements.push(dv);
+        });
+      };
+      return camelName;
+    }
+
+  };
+
+
+
 
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = Diva;
