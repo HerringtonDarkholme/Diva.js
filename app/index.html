@@ -28,16 +28,16 @@
 
         <div class="container">
             <div class="header">
-                <ul class="nav nav-pills pull-right">
-                    <li class="active"><a href="#">Home</a></li>
-                    <li><a href="#">About</a></li>
-                    <li><a href="#">Contact</a></li>
+                <ul class="dv-repeat nav nav-pills pull-right" dv-target="li" dv-action="show" dv-event="mouseenter mouseout">
+                    <li dv-target="#showboard" class="active"><a href="#">Home</a></li>
+                    <li dv-target="#showboard"><a href="#">About</a></li>
+                    <li dv-target="#showboard"><a href="#">Contact</a></li>
                 </ul>
                 <h3 class="text-muted">diva</h3>
             </div>
 
             <div class="jumbotron">
-                <h1>'Allo, 'Allo!</h1>
+                <h1 id="showboard">'Allo, 'Allo!</h1>
                 <p class="lead">Always a pleasure scaffolding your apps.</p>
                 <p><a class="btn btn-lg btn-success" href="#">Splendid!</a></p>
             </div>
@@ -80,6 +80,7 @@
         </script>
 
         <!-- build:js scripts/main.js -->
+        <script src="scripts/diva.js"></script>
         <script src="scripts/main.js"></script>
         <!-- endbuild -->
 

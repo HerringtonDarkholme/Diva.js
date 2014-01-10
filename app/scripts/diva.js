@@ -216,9 +216,6 @@
 
   // Facade Class
   function Diva(context) {
-    if (! this instanceof Diva) {
-      return new Diva(context);
-    }
     this.ctx = $(context || document);
     this.fns = $.extend({}, defaultHandler);
     this.dvElements = [];
@@ -322,6 +319,9 @@
 
   };
 
+
+
+
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = Diva;
   } else if (typeof define === 'function' && define.amd) {
@@ -331,3 +331,7 @@
   }
 
 }(window.$));
+
+(function (Diva) {
+
+});
