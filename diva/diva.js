@@ -9,7 +9,9 @@
         tar = arguments[i];
         if (tar instanceof $) {
           tar.toggleClass(cls);
-        } else { break; }
+        } else {
+          break;
+        }
       }
     },
 
@@ -23,7 +25,9 @@
           // optimization : cache last active
           tar.siblings().removeClass(cls);
           tar.toggleClass(cls);
-        } else { break; }
+        } else {
+          break;
+        }
       }
     }
 

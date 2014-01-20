@@ -9,7 +9,9 @@
         tar = arguments[i];
         if (tar instanceof $) {
           tar.toggleClass(cls);
-        } else { break; }
+        } else {
+          break;
+        }
       }
     },
 
@@ -23,7 +25,9 @@
           // optimization : cache last active
           tar.siblings().removeClass(cls);
           tar.toggleClass(cls);
-        } else { break; }
+        } else {
+          break;
+        }
       }
     }
 
@@ -216,6 +220,9 @@
 
   // Facade Class
   function Diva(context) {
+    if (! this instanceof Diva) {
+      return new Diva(context);
+    }
     this.ctx = $(context || document);
     this.fns = $.extend({}, defaultHandler);
     this.dvElements = [];
@@ -319,9 +326,6 @@
 
   };
 
-
-
-
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = Diva;
   } else if (typeof define === 'function' && define.amd) {
@@ -332,6 +336,33 @@
 
 }(window.$));
 
-(function (Diva) {
+(function (Diva, $) {
+  'use strict';
+  function DvTab(tabContainer) {
+    tabContainer = $(tabContainer);
+    var tabPaneName = tabContainer.attr('dv-pane') || '.tab-pane',
+        tabs = $(tabContainer).children('ul').children('li'),
+        tabPanes = $(tabContainer).find(tabPaneName);
+    this.tabs = tabs;
+    tabs.on('click', function () {
+      var i = tabs.index(this);
+      tabs.eq(i).addClass('active').
+        siblings().removeClass('active');
+      tabPanes.eq(i).addClass('active').
+        siblings().removeClass('active');
+    });
+  }
 
-});
+  DvTab.prototype.bind = function () {};
+  DvTab.prototype.clear = function () {
+    this.tabs.off('hover');
+    this.tabs = null;
+  };
+
+  Diva._extend({
+    name : 'tab',
+    klass: 'dv-tab',
+    ctor: DvTab
+  });
+
+})(window.Diva, window.$);
