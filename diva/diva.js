@@ -137,6 +137,13 @@
     }
   };
 
+  function DvHoverElement(ele, diva) {
+    DvElement.call(this, ele, diva);
+    this.event = (dvAttr(this.element, 'event') || 'mouseover mouseout').split(' ');
+  }
+
+  DvHoverElement.prototype = new DvElement();
+  DvHoverElement.prototype.constructor = DvHoverElement;
 
   function DvSingle (e, diva) {
     DvElement.call(this, e, diva);
@@ -244,6 +251,11 @@
       name: 'repeat',
       klass: 'dv-repeat',
       ctor: DvRepeat
+    },
+    {
+      name: 'hover',
+      klass: 'dv-hover',
+      ctor: DvHoverElement
     }
   ];
 
