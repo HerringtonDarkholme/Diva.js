@@ -324,7 +324,7 @@
     setup: function (cfg) {
       // cfg: {name: blah, klass: blah, ctor: blah}
       var self = this,
-          camelName = 'setup' + cfg.name[0].toUpperCase() + cfg.name.slice(1);
+          camelName = 'setup' + cfg.name.substr(0, 1).toUpperCase() + cfg.name.substr(1);
 
       self[camelName] = function () {
         self.ctx.find('.' + cfg.klass).each(function (i, e) {
