@@ -15,6 +15,22 @@
       }
     },
 
+    hover : function () {
+      var tar, cls = dvAttr(this, 'class') || 'active';
+      var l = arguments.length;
+      var handler = arguments[l-1].type === 'mouseenter'
+        ? 'addClass' : 'removeClass';
+
+      for (var i = 0; i < l; i++) {
+        tar = arguments[i];
+        if (tar instanceof $) {
+          tar[handler](cls);
+        } else {
+          break;
+        }
+      }
+    },
+
     single : function () {
       var tar,
         cls = dvAttr(this, 'class') || 'active';
@@ -139,7 +155,8 @@
 
   function DvHoverElement(ele, diva) {
     DvElement.call(this, ele, diva);
-    this.event = (dvAttr(this.element, 'event') || 'mouseover mouseout').split(' ');
+    this.event = (dvAttr(this.element, 'event') || 'mouseenter mouseleave').split(' ');
+    this.action = (dvAttr(this.element, 'action') || 'hover').split(' ');
   }
 
   DvHoverElement.prototype = new DvElement();
